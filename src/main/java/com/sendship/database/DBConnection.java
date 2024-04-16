@@ -12,7 +12,7 @@ public class DBConnection {
     public DBConnection(){
         String url = "jdbc:mysql://localhost:3306/warehouse";
         String username = "root";
-        String password = "H2e0n0z3el$";
+        String password = "password";
         try {
             connection = DriverManager.getConnection(url, username, password);
         }catch (SQLException e) {
