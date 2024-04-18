@@ -1,10 +1,10 @@
 //Specifies methods for managing multiple warehouses owned by a player.
-package com.sendship.interfaces;
+package com.sandship.interfaces;
 
-import com.sendship.Warehouse;
+import com.sandship.DTO.Warehouse;
 
 public interface PlayerInterface {
-    Warehouse creatWarehouse(String name, int capacity);
+    Warehouse createWarehouse(String name, int capacity);
     Warehouse updateWarehouse();
     Warehouse insertIntoWarehouse();
     void deleteWarehouse();

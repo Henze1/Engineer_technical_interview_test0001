@@ -1,14 +1,13 @@
-package com.sendship.controllers;
+package com.sandship.controllers;
 
-import com.sendship.Warehouse;
-import com.sendship.database.DBConnection;
-import com.sendship.interfaces.PlayerInterface;
+import com.sandship.DTO.Warehouse;
+import com.sandship.interfaces.PlayerInterface;
 
 public class WarehouseController extends DBConnection implements PlayerInterface {
 
 
     @Override
-    public Warehouse creatWarehouse(String name, int capacity) {
+    public Warehouse createWarehouse(String name, int capacity) {
         return null;
     }
 

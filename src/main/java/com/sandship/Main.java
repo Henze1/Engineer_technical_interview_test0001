@@ -1,4 +1,4 @@
-package com.sendship;
+package com.sandship;
 
 public class Main {
     public static void main(String[] args) {

@@ -1,9 +1,9 @@
-package com.sendship;
+package com.sandship.DTO;
 
 public class Warehouse {
     private int id;
     private String name;
-    private int MAX_CAP;
+    private int MAX_CAP = 20000;
 
     public int getId() {
         return id;
@@ -18,6 +18,11 @@ public class Warehouse {
     }
 
     public void setMAX_CAP(int MAX_CAP) {
+        if (MAX_CAP < 20000) {
+            MAX_CAP = 20000;
+        } else if (MAX_CAP > 50000) {
+            MAX_CAP = 50000;
+        }
         this.MAX_CAP = MAX_CAP;
     }
 
