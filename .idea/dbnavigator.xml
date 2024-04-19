@@ -17,16 +17,14 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="9767b721-bd31-4316-8e59-1fcd5383e724">
-      <console name="warehouse" type="STANDARD" schema="warehouse" session="Main"><![CDATA[select * from `MaterialTypes`]]></console>
+      <console name="warehouse" type="STANDARD" schema="" session="Main" />
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="9767b721-bd31-4316-8e59-1fcd5383e724" object-ref="consoles/warehouse" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="9767b721-bd31-4316-8e59-1fcd5383e724" />
@@ -57,8 +55,8 @@
           <tns-folder value="" />
           <tns-profile value="" />
           <type value="USER_PASSWORD" />
-          <user value="root" />
-          <deprecated-pwd value="SDJlMG4wejNlbCQ=" />
+          <user value="henzel" />
+          <deprecated-pwd value="cGFzc3dvcmQ=" />
         </database>
         <properties>
           <auto-commit value="false" />
