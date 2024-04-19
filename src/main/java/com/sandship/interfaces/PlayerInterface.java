@@ -4,7 +4,7 @@ package com.sandship.interfaces;
 import com.sandship.DTO.Warehouse;
 
 public interface PlayerInterface {
-    Warehouse createWarehouse(String name, int capacity);
+    void createWarehouse(Warehouse warehouse);
     Warehouse updateWarehouse();
     Warehouse insertIntoWarehouse();
     void deleteWarehouse();

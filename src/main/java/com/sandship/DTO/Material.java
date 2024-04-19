@@ -1,20 +1,29 @@
 package com.sandship.DTO;
 
 public class Material {
-    private int id;
+    private Long id;
     private String name;
     private int quantity;
     private int capacity;
-    private String icon;
-    private String description;
     private int type_id;
     private int warehouse_id;
 
-    public int getId() {
+    public Material(Long id, String name, int quantity, int capacity, int type_id, int warehouse_id) {
+        this.id = id;
+        this.name = name;
+        this.quantity = quantity;
+        this.capacity = capacity;
+        this.type_id = type_id;
+        this.warehouse_id = warehouse_id;
+    }
+
+    public Material() {}
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -25,13 +34,6 @@ public class Material {
     public void setName(String name) {
         this.name = name;
     }
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
 
     public int getCapacity() {
         return capacity;
@@ -41,13 +43,6 @@ public class Material {
         this.capacity = capacity;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
     public int getQuantity() {
         return quantity;
     }

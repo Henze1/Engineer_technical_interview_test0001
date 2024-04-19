@@ -3,7 +3,20 @@ package com.sandship.DTO;
 public class Warehouse {
     private int id;
     private String name;
-    private int MAX_CAP = 20000;
+    private int capacity;
+
+    public Warehouse() {}
+
+    public Warehouse(int id, String name, int capacity) {
+        this.id = id;
+        this.name = name;
+        if (capacity < 20000) {
+            capacity = 20000;
+        } else if (capacity > 50000) {
+            capacity = 50000;
+        }
+        this.capacity = capacity;
+    }
 
     public int getId() {
         return id;
@@ -13,17 +26,17 @@ public class Warehouse {
         this.id = id;
     }
 
-    public int getMAX_CAP() {
-        return MAX_CAP;
+    public int getCapacity() {
+        return capacity;
     }
 
-    public void setMAX_CAP(int MAX_CAP) {
-        if (MAX_CAP < 20000) {
-            MAX_CAP = 20000;
-        } else if (MAX_CAP > 50000) {
-            MAX_CAP = 50000;
+    public void setCapacity(int capacity) {
+        if (capacity < 20000) {
+            capacity = 20000;
+        } else if (capacity > 50000) {
+            capacity = 50000;
         }
-        this.MAX_CAP = MAX_CAP;
+        this.capacity = capacity;
     }
 
     public String getName() {

@@ -17,7 +17,7 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="9767b721-bd31-4316-8e59-1fcd5383e724">
-      <console name="warehouse" type="STANDARD" schema="" session="Main" />
+      <console name="warehouse" type="STANDARD" schema="warehouse" session="Main"><![CDATA[select * from `Warehouses`;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -59,7 +59,7 @@
           <deprecated-pwd value="cGFzc3dvcmQ=" />
         </database>
         <properties>
-          <auto-commit value="false" />
+          <auto-commit value="true" />
         </properties>
         <ssh-settings>
           <active value="false" />

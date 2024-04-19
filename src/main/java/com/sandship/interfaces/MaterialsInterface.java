@@ -6,15 +6,19 @@ package com.sandship.interfaces;
 
 import com.sandship.DTO.Material;
 
+import java.util.List;
+
 public interface MaterialsInterface {
-    public final int MAX_CAP = 5000;
+    Material getMaterialById(long id);
+    Material getMaterialByName(String name);
+    List<Material> getAllMaterials();
     void addMaterial(Material material);
     void addMaterialCount(int count, Material material);
     void deleteMaterial(Material material);
     String getMaterialType(Material material);
-    int getMaterialCount(Material material);
+    int getMaterialQuantity(Material material);
     String getName(Material material);
-    String getDescription(Material material);
+    String getTypeDescription(Material material);
     String getIcon(Material material);
     int getCapacity(Material material);
 }
