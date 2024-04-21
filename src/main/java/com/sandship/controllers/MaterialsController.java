@@ -14,13 +14,15 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MaterialsController extends DBConnection implements MaterialsInterface {
     private ScheduledExecutorService executorService;
 
     @Override
     public Material getMaterialById(long id) {
-        Material material = null;
+        Material material = new Material();
 
         try(PreparedStatement statement = connection.prepareStatement(
                 "select * " +
@@ -47,7 +49,7 @@ public class MaterialsController extends DBConnection implements MaterialsInterf
 
     @Override
     public Material getMaterialByName(String name) {
-        Material material = null;
+        Material material = new Material();
 
         try(PreparedStatement statement = connection.prepareStatement(
                 "select * " +
@@ -98,89 +100,83 @@ public class MaterialsController extends DBConnection implements MaterialsInterf
 
     @Override
     public void addMaterial(@NotNull Material material) {
-        try(PreparedStatement statement = connection.prepareStatement(
+        if (doesNameExist(material.getName()) && doesTypeIdExist(material.getType_id()) && doesWarehouseIdExist(material.getWarehouse_id())) {
+            Material materialByName = getMaterialByName(material.getName());
+            addMaterialCount(material.getQuantity(), materialByName);
+        } else {
+            try (PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO Materials " +
-                        "(id, name, quantity, capacity, type_id, warehouse_id)" +
-                        "VALUES (?, ?, ?, ?, ?, ?)")
-            )
-        {
-            statement.setLong(1, material.getId());
-            statement.setString(2, material.getName());
-            statement.setInt(3, material.getQuantity());
-            statement.setInt(4, material.getCapacity());
-            statement.setInt(5, material.getType_id());
-            statement.setInt(6, material.getWarehouse_id());
-            statement.executeUpdate();
-        }catch (SQLException e) {
-            System.out.println("Error occurred: " + e);
+                            "(name, quantity, capacity, type_id, warehouse_id)" +
+                            "VALUES (?, ?, ?, ?, ?)")
+            ) {
+                statement.setString(1, material.getName());
+                statement.setInt(2, material.getQuantity());
+                statement.setInt(3, material.getCapacity());
+                statement.setInt(4, material.getType_id());
+                statement.setInt(5, material.getWarehouse_id());
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                System.out.println("Error occurred: " + e);
+            }
         }
-
     }
 
     @Override
     public void addMaterialCount(int count, @NotNull Material material) {
         executorService = Executors.newSingleThreadScheduledExecutor();
 
-        var ref = new Object() {
-            int quantity = getMaterialQuantity(material);
-        };
-
-        count += ref.quantity;
+        int initialQuantity = getMaterialQuantity(material);
+        count += initialQuantity;
 
         long materialId = material.getId();
 
+        AtomicInteger quantity = new AtomicInteger(initialQuantity);
         int finalCount = count;
+
+        AtomicBoolean finalCountReached = new AtomicBoolean(false);
+
         executorService.scheduleAtFixedRate(() -> {
-            try(PreparedStatement statement = connection.prepareStatement(
-                "update Materials " +
-                    "set quantity = ? " +
-                    "where id = ?")
-                )
-            {
-                statement.setInt(1, ref.quantity);
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "UPDATE Materials " +
+                            "SET quantity = ? " +
+                            "WHERE id = ?")) {
+                statement.setInt(1, quantity.get());
                 statement.setLong(2, materialId);
                 statement.executeUpdate();
             } catch (SQLException e) {
                 System.out.println("Error occurred: " + e);
             }
-            ++ref.quantity;
-            if (ref.quantity > finalCount) {
+            int currentQuantity = quantity.incrementAndGet();
+            if (currentQuantity > finalCount) {
                 executorService.shutdown();
+                finalCountReached.set(true);
             }
 
             System.out.println(displayMaterial(material));
         }, 0, 1, TimeUnit.SECONDS);
-    }
 
-    @Override
-    public void deleteMaterial(@NotNull Material material) {
-        try(PreparedStatement statement = connection.prepareStatement(
-                "DELETE FROM Materials" +
-                    "WHERE id = ?"))
-        {
-            statement.setLong(1, material.getId());
-            statement.executeQuery();
-        } catch (SQLException e) {
-            System.out.println("Error occurred: " + e);
+        while (!finalCountReached.get()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted while waiting for final count");
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
+
     @Override
-    public String getMaterialType(@NotNull Material material) {
-        int typeId = 0;
+    public void deleteMaterial(long id) {
         try(PreparedStatement statement = connection.prepareStatement(
-                "SELECT type_id " +
-                    "FROM Materials " +
+                "DELETE FROM Materials " +
                     "WHERE id = ?"))
         {
-            statement.setLong(1, material.getId());
-            ResultSet resultSet = statement.executeQuery();
-
-            typeId = resultSet.getInt("type_id");
+            statement.setLong(1, id);
+            statement.execute();
         } catch (SQLException e) {
             System.out.println("Error occurred: " + e);
         }
-        return materialType(typeId);
     }
 
     @Override
@@ -305,8 +301,8 @@ public class MaterialsController extends DBConnection implements MaterialsInterf
         return capacity;
     }
 
-    public String displayMaterial(Material material) {
-        String values = "";
+    public String displayMaterial(@NotNull Material material) {
+        String values = null;
         try(PreparedStatement statement = connection.prepareStatement(
                 "Select * " +
                     "from Materials " +
@@ -317,7 +313,7 @@ public class MaterialsController extends DBConnection implements MaterialsInterf
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                values += "| " + resultSet.getLong("id") + " | "
+                values = "| " + resultSet.getLong("id") + " | "
                 + resultSet.getString("name") + " | "
                 + resultSet.getInt("quantity") + " | "
                 + resultSet.getInt("capacity") + " |";
@@ -341,5 +337,65 @@ public class MaterialsController extends DBConnection implements MaterialsInterf
         };
 
         return type;
+    }
+
+    public boolean doesIdExist(long id) {
+        boolean exists = false;
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM Materials WHERE id = ?")
+        )
+        {
+            statement.setLong(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            exists = resultSet.next();
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+        return !exists;
+    }
+
+    public boolean doesNameExist(String name) {
+        boolean exists = false;
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM Materials WHERE name = ?")
+        )
+        {
+            statement.setString(1, name);
+            ResultSet resultSet = statement.executeQuery();
+            exists = resultSet.next();
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+        return exists;
+    }
+
+    public boolean doesTypeIdExist(int id) {
+        boolean exists = false;
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM Materials WHERE type_id = ?")
+        )
+        {
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            exists = resultSet.next();
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+        return exists;
+    }
+
+    public boolean doesWarehouseIdExist(int id) {
+        boolean exists = false;
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM Materials WHERE warehouse_id = ?")
+        )
+        {
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            exists = resultSet.next();
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+        return exists;
     }
 }

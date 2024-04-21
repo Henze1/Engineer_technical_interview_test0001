@@ -14,8 +14,7 @@ public interface MaterialsInterface {
     List<Material> getAllMaterials();
     void addMaterial(Material material);
     void addMaterialCount(int count, Material material);
-    void deleteMaterial(Material material);
-    String getMaterialType(Material material);
+    void deleteMaterial(long id);
     int getMaterialQuantity(Material material);
     String getName(Material material);
     String getTypeDescription(Material material);

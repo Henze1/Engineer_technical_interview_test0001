@@ -8,21 +8,20 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WarehouseController extends DBConnection implements WarehouseInterface {
-
-
     @Override
     public void createWarehouse(@NotNull Warehouse warehouse) {
         try(PreparedStatement statement = connection.prepareStatement(
                 "insert into Warehouses " +
-                    "(id, name, capacity) " +
-                    "values (?, ?, ?)"))
+                    "(name, capacity) " +
+                    "values (?, ?)"))
         {
-            statement.setInt(1, warehouse.getId());
-            statement.setString(2, warehouse.getName());
-            statement.setInt(3, warehouse.getCapacity());
+            statement.setString(1, warehouse.getName());
+            statement.setInt(2, warehouse.getCapacity());
             statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error occurred: " + e);
@@ -30,14 +29,9 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
     }
 
     @Override
-    public void updateWarehouse(List<Material> materials) {
-//        TODO("Implement")
-    }
-
-    @Override
-    public void insertIntoWarehouse(int id, int count) {
-        int warehouseId = getWarehouseId(id);
-        int warehouseCapacity = getWarehouseCapacity(warehouseId);
+    public void insertIntoWarehouse(long id, int count, long warehouseId) {
+        int oldWarehouseId = getWarehouseId(id);
+        int warehouseCapacity = getWarehouseCapacity(oldWarehouseId);
 
         MaterialsController materialsController = new MaterialsController();
 
@@ -48,7 +42,7 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
                 "where warehouse_id = ?")
             )
         {
-            statement.setInt(1, warehouseId);
+            statement.setInt(1, oldWarehouseId);
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -62,20 +56,23 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
             } else {
                 Material material = materialsController.getMaterialById(id);
                 try(PreparedStatement statement1 = connection.prepareStatement(
-                    "insert into Materials (id, name, quantity, capacity, type_id, warehouse_id) " +
-                        "values (?, ?, ?, ?, ?, ?) " +
-                        "on duplicate key update name = values(name), quantity = values(quantity) + ?, capacity = values(capacity), type_id = values(type_id), warehouse_id = values(warehouse_id))")
-                    )
-                {
-                    statement.setLong(1,material.getId());
-                    statement.setString(2,material.getName());
-                    statement.setInt(3,material.getQuantity());
-                    statement.setInt(4,material.getCapacity());
-                    statement.setInt(5,material.getType_id());
-                    statement.setInt(6,material.getWarehouse_id());
-                    statement.setInt(7,material.getQuantity());
+                        "INSERT INTO Materials (name, quantity, capacity, type_id, warehouse_id) " +
+                            "VALUES (?, ?, ?, ?, ?) " +
+                            "ON DUPLICATE KEY UPDATE " +
+                            "name = VALUES(name), " +
+                            "quantity = quantity + ?, " +
+                            "capacity = VALUES(capacity), " +
+                            "type_id = VALUES(type_id), " +
+                            "warehouse_id = VALUES(warehouse_id)")
+                ){
+                    statement1.setString(1, material.getName());
+                    statement1.setInt(2, count);
+                    statement1.setInt(3, material.getCapacity());
+                    statement1.setInt(4, material.getType_id());
+                    statement1.setLong(5, warehouseId);
+                    statement1.setInt(6, count);
 
-                    statement.execute();
+                    statement1.execute();
                 } catch (SQLException e) {
                     System.out.println("Error occurred: " + e);
                 }
@@ -86,7 +83,7 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
     }
 
     @Override
-    public void deleteFromWarehouse(int id, int count) {
+    public void deleteFromWarehouse(long id, int count) {
         int amount = 0;
         try(PreparedStatement statement = connection.prepareStatement(
             "select quantity " +
@@ -94,7 +91,7 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
                 "where id = ?")
             )
         {
-            statement.setInt(1, id);
+            statement.setLong(1, id);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
@@ -134,31 +131,74 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
     }
 
     @Override
-    public void deleteWarehouse(@NotNull Warehouse warehouse) {
+    public void deleteWarehouse(long id) {
         try(PreparedStatement statement = connection.prepareStatement(
             "delete from Materials " +
                 "where warehouse_id = ?")
             )
         {
-            statement.setInt(1, warehouse.getId());
+            statement.setLong(1, id);
             statement.execute();
         } catch (SQLException e) {
             System.out.println("Error occurred: " + e);
         }
 
         try(PreparedStatement statement = connection.prepareStatement(
-            "delete form Warehouses " +
+            "delete from Warehouses " +
                 "where id = ?")
             )
         {
-            statement.setInt(1, warehouse.getId());
+            statement.setLong(1, id);
             statement.execute();
         } catch (SQLException e) {
             System.out.println("Error occurred: " + e);
         }
     }
 
-    public int getWarehouseId(int id) {
+    @Override
+    public Warehouse getWarehouse(long id) {
+        Warehouse warehouse = new Warehouse();
+        try(PreparedStatement statement = connection.prepareStatement(
+            "select * " +
+                "from Warehouses " +
+                "where id = ?")
+            )
+        {
+            statement.setLong(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                warehouse.setId(resultSet.getInt("id"));
+                warehouse.setName(resultSet.getString("name"));
+                warehouse.setCapacity(resultSet.getInt("capacity"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+
+        return warehouse;
+    }
+
+    @Override
+    public List<Warehouse> getAllWarehouses() {
+        List<Warehouse> warehouses = new ArrayList<>();
+        try(Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("select * from Warehouses");
+
+            while (resultSet.next()) {
+                Warehouse warehouse = new Warehouse();
+                warehouse.setId(resultSet.getInt("id"));
+                warehouse.setName(resultSet.getString("name"));
+                warehouse.setCapacity(resultSet.getInt("capacity"));
+                warehouses.add(warehouse);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+
+        return warehouses;
+    }
+
+    public int getWarehouseId(long id) {
         int warehouseId = 0;
 
         try(PreparedStatement statement = connection.prepareStatement(
@@ -167,7 +207,7 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
                 "where id = ?")
             )
         {
-            statement.setInt(1, id);
+            statement.setInt(1, (int) id);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
@@ -203,5 +243,42 @@ public class WarehouseController extends DBConnection implements WarehouseInterf
         }
 
         return capacity;
+    }
+
+    @Override
+    public int getQuantityInWarehouse(int id) {
+        int quantity = 0;
+        try(PreparedStatement statement = connection.prepareStatement(
+            "select quantity " +
+                "from Materials " +
+                "where warehouse_id = ?")
+            )
+        {
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                quantity += resultSet.getInt("quantity");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+
+        return quantity;
+    }
+
+    public boolean doesIdExist(long id) {
+        boolean exists = false;
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM Warehouses WHERE id = ?")
+        )
+        {
+            statement.setLong(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            exists = resultSet.next();
+        } catch (SQLException e) {
+            System.out.println("Error occurred: " + e);
+        }
+        return !exists;
     }
 }
