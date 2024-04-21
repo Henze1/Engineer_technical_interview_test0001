@@ -8,8 +8,12 @@ public class DBConnection {
     protected Connection connection;
 
     public DBConnection(){
+        //connect to database
+        //url - change to your database
         String url = "jdbc:mysql://localhost:3306/warehouse";
+        //username - change to your username
         String username = "henzel";
+        //password - change to your password
         String password = "password";
         try {
             connection = DriverManager.getConnection(url, username, password);

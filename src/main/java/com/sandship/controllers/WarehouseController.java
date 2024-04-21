@@ -1,3 +1,6 @@
+//This class contains methods for managing multiple warehouses owned by a player
+//that are stored in the database and for transferring materials between warehouses.
+
 package com.sandship.controllers;
 
 import com.sandship.DTO.Material;

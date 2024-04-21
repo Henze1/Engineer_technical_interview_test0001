@@ -1,4 +1,4 @@
-
+//Specifies methods for managing multiple warehouses owned by a player.
 
 package com.sandship.interfaces;
 

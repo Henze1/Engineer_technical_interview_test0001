@@ -1,3 +1,6 @@
+//This class contains methods for accessing the material
+//type, quantity, and modifying everything in the database.
+
 package com.sandship.controllers;
 
 import com.sandship.DTO.Material;
@@ -121,6 +124,8 @@ public class MaterialsController extends DBConnection implements MaterialsInterf
         }
     }
 
+//    This method is special for adding material to warehouse and for me
+//    as it works in a separate thread, and this is my first attempt in using it.
     @Override
     public void addMaterialCount(int count, @NotNull Material material) {
         executorService = Executors.newSingleThreadScheduledExecutor();

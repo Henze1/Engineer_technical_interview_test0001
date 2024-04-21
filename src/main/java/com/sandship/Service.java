@@ -1,3 +1,7 @@
+//The Service class is responsible for running the program.
+//It contains methods for managing multiple warehouses owned by a player.
+//It also contains methods for transferring materials between warehouses.
+//and for creating, updating, and deleting warehouses.
 package com.sandship;
 
 import com.sandship.DTO.Material;
@@ -55,6 +59,7 @@ public class Service implements ServiceInterface {
     }
 
 
+    //Create new warehouse
     @Override
     public void createWarehouse() {
         WarehouseController controller = new WarehouseController();
@@ -84,7 +89,7 @@ public class Service implements ServiceInterface {
 
         controller.createWarehouse(warehouse);
     }
-
+    //Update warehouse
     @Override
     public void updateWarehouse() {
         int option;
@@ -108,7 +113,7 @@ public class Service implements ServiceInterface {
         }
     }
 
-
+    //Insert material into warehouse
     @Override
     public void insertIntoWarehouse() {
         MaterialsController controller = new MaterialsController();
@@ -166,7 +171,7 @@ public class Service implements ServiceInterface {
         }
     }
 
-
+    //Delete material from warehouse
     @Override
     public void deleteFromWarehouse() {
         MaterialsController controller = new MaterialsController();
@@ -203,7 +208,7 @@ public class Service implements ServiceInterface {
         }
     }
 
-
+    //Delete warehouse
     @Override
     public void deleteWarehouse() {
         WarehouseController warehouseController = new WarehouseController();
@@ -243,7 +248,7 @@ public class Service implements ServiceInterface {
         }
     }
 
-
+    //Transfer items from one warehouse to another
     @Override
     public void transferFromWarehouse() {
         WarehouseController warehouseController = new WarehouseController();
