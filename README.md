@@ -1,4 +1,4 @@
-For running the programm you need to connect to MySQL database, have the tables attached bellow and have at least the data attached bellow
+To run the program you need to connect to MySQL database, have the tables attached bellow and have at least the data attached bellow
 
 SQL command for creating and adding tables and their contents:
 {
